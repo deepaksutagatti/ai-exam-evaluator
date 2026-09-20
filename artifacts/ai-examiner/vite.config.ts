@@ -5,8 +5,6 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 
-import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
-
 const envPath = [
   path.resolve(process.cwd(), '.env'),
   path.resolve(process.cwd(), '../../.env'),
@@ -17,9 +15,7 @@ if (envPath) {
   loadEnvFile(envPath);
 }
 
-// Replit injects PORT/BASE_PATH through the artifact workflow. When this
-// package is run directly on a laptop those values do not exist, so use the
-// conventional Vite defaults instead of failing while loading the config.
+
 const localDev =
   process.env.LOCAL_DEV === 'true' || !process.env.PORT;
 const rawPort = localDev
@@ -39,20 +35,6 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss({ optimize: false }),
-    runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== 'production' &&
-    process.env.REPL_ID !== undefined
-      ? [
-          await import('@replit/vite-plugin-cartographer').then((m) =>
-            m.cartographer({
-              root: path.resolve(import.meta.dirname, '..'),
-            }),
-          ),
-          await import('@replit/vite-plugin-dev-banner').then((m) =>
-            m.devBanner(),
-          ),
-        ]
-      : []),
   ],
   resolve: {
     alias: {
