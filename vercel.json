@@ -1,6 +1,6 @@
 {
   "framework": "vite",
-  "installCommand": "corepack enable && pnpm install --frozen-lockfile",
+  "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm --filter @workspace/ai-examiner run build",
   "outputDirectory": "artifacts/ai-examiner/dist/public",
   "rewrites": [
