@@ -5,8 +5,8 @@
   "outputDirectory": "artifacts/ai-examiner/dist/public",
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+       "source": "/api/:path*",
+      "destination": "https://ai-examiner-api-fzaz.onrender.com/api/:path*"
     }
   ]
 }
