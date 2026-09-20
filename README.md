@@ -1,52 +1,76 @@
-# AI Examiner
+# AI Examiner: Evidence-Based Academic Assessment
 
-AI Examiner helps educators review exam answer sheets, compare them with marking schemes, and keep human-approved assessment records in one workspace.
+🔗 **[View Live Application Here](https://ai-exam-evaluator-nine.vercel.app)** 
 
-## Run & Operate
+A full-stack grading platform that uses multi-modal LLMs to evaluate handwritten student answer sheets against teacher-defined rubrics, while keeping human-approved assessment records in one secure cloud workspace.
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server on port 5000
-- `pnpm --filter @workspace/ai-examiner run dev` — run the Vite frontend
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
-- External deployment env: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and optional `SUPABASE_STORAGE_BUCKET` (`exam-files` by default) provide private durable PDF storage.
 
-## Stack
+## Overview
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from the OpenAPI spec)
-- Build: esbuild (CJS bundle)
 
-## Where things live
+https://github.com/user-attachments/assets/873b0941-5f50-4684-b7c7-d5e7f4472159
 
-- `artifacts/ai-examiner` — React/Vite web application
-- `artifacts/api-server` — Express API, Clerk authentication, evaluation routes, and file access
-- `lib/db` — Drizzle schema and PostgreSQL client
-- `lib/api-zod` — shared request and response validation
-- `render.yaml` — Render backend service configuration
-- `vercel.json` — Vercel frontend build and SPA routing configuration
 
-## Architecture decisions
+### The Problem
+Grading subjective, handwritten exams is one of the most time-consuming bottlenecks in academia. While evaluating long-form answers requires context and rubric alignment, manual grading is slow and prone to subjective fatigue.
 
-- Clerk handles authentication while PostgreSQL stores application profiles, rosters, documents, and evaluations.
-- Uploaded PDFs are kept in a private Supabase Storage bucket; the API authorizes every upload and download.
-- Teachers retain final approval over AI-generated scores and can record a final manual score.
-- The frontend and API can run on separate origins for Vercel and Render deployments.
+### The Solution
+AI Examiner acts as a highly capable assistant for educators using a "Human-in-the-Loop" architecture. The system processes scanned PDFs, grades the handwritten responses based on an uploaded answer key, and generates a structured feedback report. Teachers retain final approval over all AI-generated scores and can record a final manual score before releasing it to students.
 
-## Product
+## Technical Highlights
+* **Stateless Cloud Architecture:** Fully migrated away from local file storage to a serverless infrastructure. Uploaded exam PDFs are stored securely in **Supabase Storage** buckets. The backend API authorizes and signs every upload/download request, ensuring that confidential student data remains durable, private, and horizontally scalable.
+* **Defensive AI Pipeline:** To prevent LLM data hallucinations from corrupting the database, the backend implements a strict validation layer using **Zod**. Every JSON response from the Gemini API is parsed, sanitized, and type-checked before interacting with PostgreSQL.
+* **Binary PDF Manipulation:** Programmatically manipulates the binary data of the student's original PDF, drawing the final scorecard and feedback directly onto the document before saving it to the cloud.
 
-- Admins manage subjects, student accounts, rosters, and HOD accounts.
-- HODs see students assigned to their branch.
-- Teachers register for subjects, upload marking schemes, review answer sheets, and finalize evaluations.
-- Students can view their released evaluation results.
+## User Roles (RBAC)
+Clerk handles authentication, isolating workspaces across four specific roles:
+* **Admins:** Manage subjects, student accounts, rosters, and HOD accounts.
+* **HODs (Head of Department):** Oversee students assigned to their specific branch.
+* **Teachers:** Register for subjects, upload marking schemes, review AI-assisted answer sheets, and finalize evaluations.
+* **Students:** Securely view their released evaluation results and graded PDFs.
 
-## Deployment notes
+## Tech Stack & Architecture
+* **Frontend (Hosted on Vercel):** React, Vite, Wouter (SPA routing)
+* **Backend (Hosted on Render):** Node.js 24, Express 5, esbuild (CJS bundle)
+* **Database & Storage (Supabase):** PostgreSQL, Drizzle ORM, Supabase Storage
+* **Validation & Codegen:** Zod (zod/v4), drizzle-zod, Orval (generates API hooks/schemas from OpenAPI spec)
+* **Auth:** `pnpm` workspaces, Clerk 
 
-Set `DATABASE_URL` to the Supabase Session Pooler connection string. The API also needs `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_STORAGE_BUCKET=exam-files`.
+## Project Structure
+* `artifacts/ai-examiner` — React/Vite web application
+* `artifacts/api-server` — Express API, Clerk authentication, evaluation routes, and Supabase integration
+* `lib/db` — Drizzle schema and PostgreSQL client
+* `lib/api-zod` — Shared request and response validation
+* `render.yaml` — Render backend service configuration
+* `vercel.json` — Vercel frontend build and SPA routing configuration
 
-For a split deployment, set `VITE_API_URL` on Vercel to the Render API origin and set `CORS_ORIGINS` on Render to the Vercel origin. Keep service-role, Clerk secret, Gemini, and database credentials on the API server only.
+## Run & Operate (Local Setup)
+
+**Required Backend Environment Variables (`.env`):**
+Because the app relies on cloud storage, you must provide Supabase credentials even for local development.
+* `DATABASE_URL` — Supabase Postgres connection string
+* `SUPABASE_URL` — Supabase project URL
+* `SUPABASE_SERVICE_ROLE_KEY` — Secret key for backend bypass
+* `SUPABASE_STORAGE_BUCKET` — (e.g., `exam-files`)
+* `GEMINI_API_KEY` — Google Gemini API key
+* `CLERK_SECRET_KEY` & `CLERK_PUBLISHABLE_KEY` 
+
+**Commands:**
+```bash
+# Run the API server on port 5000
+pnpm --filter @workspace/api-server run dev 
+
+# Run the Vite frontend
+pnpm --filter @workspace/ai-examiner run dev 
+
+# Regenerate API hooks and Zod schemas from the OpenAPI spec
+pnpm --filter @workspace/api-spec run codegen 
+
+# Push DB schema changes (dev only)
+pnpm --filter @workspace/db run push 
+
+# Full typecheck across all packages
+pnpm run typecheck 
+
+# Typecheck + build all packages
+pnpm run build
