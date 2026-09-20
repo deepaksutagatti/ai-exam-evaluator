@@ -1,0 +1,29 @@
+kind = "video"
+videoAspectRatio = "16:9"
+previewPath = "/ai-examiner-evaluation-video/"
+title = "AI Examiner · Evaluation Result Walkthrough"
+description = "A short 16:9 motion walkthrough of the AI Examiner answer-sheet evaluation flow using illustrative sample data."
+version = "1.0.0"
+id = "artifacts/ai-examiner-evaluation-video"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/ai-examiner-evaluation-video/" ]
+localPort = 24720
+
+[services.development]
+run = "pnpm --filter @workspace/ai-examiner-evaluation-video run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ai-examiner-evaluation-video", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/ai-examiner-evaluation-video/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24720"
+BASE_PATH = "/ai-examiner-evaluation-video/"

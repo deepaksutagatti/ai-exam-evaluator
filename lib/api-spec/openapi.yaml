@@ -1,0 +1,197 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: evaluation
+    description: AI exam evaluation operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /evaluate:
+    post:
+      operationId: evaluateAnswerSheet
+      tags: [evaluation]
+      summary: Evaluate an answer sheet PDF
+      description: Sends an answer-sheet PDF and grading context to Gemini and returns a structured evaluation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EvaluationRequest"
+      responses:
+        "200":
+          description: Structured AI evaluation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvaluationResult"
+        "400":
+          description: Invalid evaluation request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Evaluation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    EvaluationRequest:
+      type: object
+      properties:
+        fileName:
+          type: string
+          minLength: 1
+        mimeType:
+          type: string
+          enum: [application/pdf]
+        pdfBase64:
+          type: string
+          minLength: 1
+        examTitle:
+          type: string
+          minLength: 1
+        subject:
+          type: string
+        maxScore:
+          type: number
+          minimum: 1
+        answerKey:
+          type: string
+        rubric:
+          type: string
+        subjectId:
+          type: number
+          format: double
+          minimum: 1
+        studentId:
+          type: number
+          format: double
+          minimum: 1
+        answerSheetDocumentId:
+          type: number
+          format: double
+          minimum: 1
+        modelAnswerDocumentId:
+          type: number
+          format: double
+          minimum: 1
+      required:
+        - fileName
+        - mimeType
+        - pdfBase64
+        - examTitle
+        - maxScore
+    EvaluationResult:
+      type: object
+      properties:
+        examTitle:
+          type: string
+        overallScore:
+          type: number
+        maxScore:
+          type: number
+        percentage:
+          type: number
+        grade:
+          type: string
+        confidence:
+          type: number
+        summary:
+          type: string
+        strengths:
+          type: array
+          items:
+            type: string
+        improvements:
+          type: array
+          items:
+            type: string
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestionEvaluation"
+        integrityNotes:
+          type: array
+          items:
+            type: string
+        evaluationId:
+          type: number
+        evaluatedPdfPath:
+          type: string
+      required:
+        - examTitle
+        - overallScore
+        - maxScore
+        - percentage
+        - grade
+        - confidence
+        - summary
+        - strengths
+        - improvements
+        - questions
+        - integrityNotes
+    QuestionEvaluation:
+      type: object
+      properties:
+        question:
+          type: string
+        score:
+          type: number
+        maxScore:
+          type: number
+        verdict:
+          type: string
+          enum: [correct, partial, incorrect, unanswered, unclear]
+        feedback:
+          type: string
+        expectedAnswer:
+          type: string
+        evidence:
+          type: string
+      required:
+        - question
+        - score
+        - maxScore
+        - verdict
+        - feedback
+        - expectedAnswer
+        - evidence
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+

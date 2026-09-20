@@ -1,0 +1,4 @@
+- [Assessment access boundaries](assessment-access-boundaries.md) — subject ownership and approval must be carried on every uploaded scan and evaluation record.
+- [Cross-platform local development](cross-platform-local-development.md) — local startup must not depend on Replit-only variables or Linux-only dependency pruning.
+- [AI Examiner visual system](ai-examiner-design-system.md) — public, portal, and evaluation screens share one navy/cobalt/yellow token source.
+- [Evaluation context attachments](evaluation-context-attachments.md) — a stored marking-scheme document must be attached to the AI request, not only saved by ID.
